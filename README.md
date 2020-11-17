@@ -18,22 +18,27 @@ There is a script: get_vpn_info.bash which checks for any gaps in assigned IPs a
 The VPN client scripts have been tested on arch Linux, Ubuntu 18+, Debian 9, Fedora, CentOS, MacOS, and Windows 10.
 
 Prerequisites:
-Linux server
-Apache
-php7+
-php-ssh2
-HTTPS connection to the VPN server.
-Wireguard-Manager has its own dependencies (jq, qrencode)
+
+- Linux server
+- Apache
+- php7+
+- php-ssh2
+- HTTPS connection to the VPN server.
+- Wireguard-Manager has its own dependencies (jq, qrencode)
 
 ## Setup
 
 ###Wireguard Setup
 
-Wireguard needs to be installed first.  If you already have Wireguard installed, then skip this step. Run the script wireguard-server.sh and follow the prompts or the easiest method is to run it Headless from the commandline:
+Wireguard needs to be installed first.  **If you already have Wireguard installed, then skip this step.**  Run the script *wireguard-server.sh* and follow the prompts or the easiest method is to run it Headless from the commandline:
 
-HEADLESS_INSTALL=y ./wireguard-server.sh --install
+<pre>HEADLESS_INSTALL=y ./wireguard-server.sh --install</pre>
 
 and it will setup Wireguard automatically and download all necessary packages.
+
+However, if you want to manually configure settings then run:
+
+<pre>./wireguard-server.sh --install</pre>
 
 ### Nowire configuration setup
 
