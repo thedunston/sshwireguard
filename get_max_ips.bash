@@ -2,13 +2,13 @@
 
 ####    EDIT IF DIFFERENT FROM THE DEFAULT LOCATION     ####
 
-WG_CONFIG='/etc/wireguard/wg0.conf'
+WG_CONFIG="/etc/wireguard/wg0.conf"
 
 ####    END EDITING     ####
 
 : '
 
-On a multiuser server, the VPN admin may only want to allow users to have a limited number of IPs so that is checked here.
+Only a multiuser server, The VPN admin may only want to allow users to have a limited number of IPs so that is checked here.
 
 
 '

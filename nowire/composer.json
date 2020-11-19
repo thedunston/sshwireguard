@@ -1,0 +1,6 @@
+{
+    "require": {
+        "spomky-labs/otphp": "^10.0",
+        "bacon/bacon-qr-code": "^2.0"
+    }
+}

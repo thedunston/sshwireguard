@@ -45,7 +45,7 @@ However, if you want to manually configure settings then run:
 Automatic setup
 
 <pre>
-bash setup.bash
+bash nowire-setup.bash
 </pre>
 
 to setup the nowire configuration directory and add the nowire directory and scripts to your web directory.
@@ -86,6 +86,54 @@ www-data hostname = NOPASSWD: /bin/bash /var/peers/wireguard-nowire/tmp/wg-add.b
 </pre>
 
 The file wg-add.bash is created dynamically and deleted after it adds or removes a VPN user.
+
+#### OTP Setup
+
+During the install, you can select the option to enable OTP.  Otherwise, you can edit nowire/config.php and change:
+
+<pre>$USE_OTP = 0;</pre>
+
+to
+
+<pre>$USE_OTP = 1;</pre>
+
+and change 
+
+Next, add the file get_expire_account.bash to cron and run it hourly.
+
+<pre>
+chmod +x get_expire_account.bash
+cp get_expire_account.bash /etc/cron.hourly
+</pre>
+
+Or add it to your crontab:
+
+<pre>
+0 * * * * bash /var/peers/wireguard-nowire/get_expire_account.bash
+</pre>
+
+Also, with OTP, the VPN Peers connection to the VPN will default to expire every 24 hours unless otherwise specified.  You will be prompted during the install or you can edit wireguard-server.sh and near top change:
+
+<pre>
+OTP_HOURS=24
+</pre>
+
+
+to whatever value.  With bash, don't put spaces between the variable and value.
+
+Won't work:
+
+<pre>
+OTP_HOURS = 48
+</pre>
+
+Will work:
+
+<pre>
+OTP_HOURS=48
+</pre>
+
+FreeOTP and Google Authenticator were tested.
 
 ## CLIENT SCRIPT
 

@@ -1,10 +1,23 @@
 <?php
 
-/**  Main script to manage assigning IPs. */
+// Load otp libraries
+require __DIR__ . '/.htvendor/autoload.php';
+
+// // use the OTP library
+use OTPHP\TOTP;
+
 include('config.php');
 
+/**************************************
+
+Please be sure you understand how the code works before editing below.
+
+***************************************/
+
+// Check there is a valid username before being passed for authentication
 $username = $_POST['username'];
 
+// Check username before authentication
 if (!preg_match('/^[a-zA-Z\d_\.-]{2,30}$/', $username)) {
 
 	the_msg("Invalid username and/or password.");
@@ -13,21 +26,103 @@ if (!preg_match('/^[a-zA-Z\d_\.-]{2,30}$/', $username)) {
 
 if ($_POST['submit'] == "Login") {
 
-	$upass = $_POST['password'];
+	$password = $_POST['password'];
 
-	ssh_conn($username, $upass, $SSH_HOST);
+	// Test authentication
+	$c = ssh_conn($username, $password, $SSH_HOST);
+
+	// The OTP code provided by the user.
+	$input = $_POST['code'];
+
+	// Check if code has been provided.
+	if ($USE_OTP == 1) {
+		
+		if ($input == "") {
+		
+			echo "Send OTP";
+			exit();
+
+		}
+
+
+		// Remove non-numeric characters
+		$input = preg_replace("/[^0-9]/", "", $input);
+
+		// Check that the input is valid
+		if (!is_numeric($input)) {
+
+			the_msg("Invalid code.");
+
+		}
+
+		if (strlen($input) != 6) {
+
+			the_msg("Invalid code.");
+	
+		}
+
+		// Clean up username before querying the DB
+		$username_escaped = SQLite3::escapeString($username);
+		
+		// Initialize Database
+		$db = new SQLite3($WG_SERVER_SCRIPT_PATH.'/otp/nowire.db');
+
+		// Retrieve user secret from DB
+		$stm = $db->prepare('SELECT user,secret FROM nowire_otp WHERE user = ?;');
+		$stm->bindValue(1,$username_escaped, SQLITE3_TEXT);
+		$result = $stm->execute();
+
+		$secret = "";
+
+		// Get the secret
+	        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+	
+			if ($row['user'] == "") {
+
+				the_msg("Please register for an account.");
+
+			}
+
+			$secret = $row['secret'];
+
+		}
+
+		// Decrypt the secret	
+		$dec = otp_decrypt($secret,base64_decode($password));
+
+		// Initialize the current code
+		$otp = TOTP::create($dec); // create TOTP object from the secret.
+
+		if (!$otp->verify($input)) {
+	
+			the_msg("Invalid code provided.");
+		
+		} else {
+		
+			$otp_success = 1;	
+
+		}
+
+	} // end use OTP check
+
+
+/**************************************************************************
+*
+* Start VPN client configuration
+*
+**************************************************************************/
 
 	// Script to run
 	$script = "$WG_SERVER_SCRIPT_PATH/tmp/wg-add.bash";
-	
+
 	// Check if user has reached max number of peer ips
 	$retval = write_file($script,"bash $WG_SERVER_SCRIPT_PATH/get_max_ips.bash $username");
 
 	// Check to see if maximum number of Peer IPs has been met
 	if ($retval[1] >= $PEER_IPS) {
-
+	
 		the_msg("The maximum number of VPN IPs you can have has been met.");
-
+	
 	}
 
 	// Client configuration location
@@ -97,7 +192,6 @@ if ($_POST['submit'] == "Login") {
 			the_msg("The IP cannot be deleted.");
 
 		}
-		
 
 		// Verify the IP is valid
 		check_ip($stat_ip);
@@ -178,9 +272,6 @@ if ($_POST['submit'] == "Login") {
 
 		// Add the VPN peer and static IP
 		$add_user_stat = "bash $WG_SERVER_SCRIPT_PATH/wireguard-server.sh --add $username:static_ip:$last_octet[3]\n";
-
-		// Re-sort if any unused IPs
-		#$add_user_stat .= "bash $WG_SERVER_SCRIPT_PATH/get_vpn_info.bash";
 
 		// Script that will be executed by the web server user
 		$script = "$WG_SERVER_SCRIPT_PATH/tmp/wg-add.bash";

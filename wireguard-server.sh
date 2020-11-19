@@ -15,8 +15,9 @@ super-user-check
 
 ###########    CUSTOM FOR NOWIRE ##################
 ADD_CLIENT_NAME=$(echo ${2})
-WG_CLIENTS='/var/peers/wireguard-nowire/clients'
-WG_SCRIPTS_NOWIRE='/var/peers/wireguard-nowire'
+WG_CLIENTS="/var/peers/wireguard-nowire/clients"
+WG_SCRIPTS_NOWIRE="/var/peers/wireguard-nowire"
+OTP_HOURS=24
 ###########    CUSTOM FOR NOWIRE ##################
 
 # Checking For Virtualization
@@ -27,10 +28,10 @@ function virt-check() {
     exit
   fi
   # Deny LXC Virtualization
-#  if [ "$(systemd-detect-virt)" == "lxc" ]; then
-  #  echo "LXC virtualization is not supported (yet)."
- #   exit
- # fi
+  if [ "$(systemd-detect-virt)" == "lxc" ]; then
+    echo "LXC virtualization is not supported (yet)."
+    exit
+  fi
   # Deny Docker
   if [ -f /.dockerenv ]; then
     echo "Docker is not supported (yet)."
@@ -952,7 +953,7 @@ else
       CLIENT_PUBKEY=$(echo "$CLIENT_PRIVKEY" | wg pubkey)
       PRESHARED_KEY=$(wg genpsk)
       PEER_PORT=$(shuf -i1024-65535 -n1)
-      PRIVATE_SUBNET_V4=$(head -n1 $WG_CONFIG | awk '{print $2}' | cut -d, -f1)
+      PRIVATE_SUBNET_V4=$(head -n1 $WG_CONFIG | awk '{print $2}')
       PRIVATE_SUBNET_MASK_V4=$(echo "$PRIVATE_SUBNET_V4" | cut -d "/" -f 2)
       PRIVATE_SUBNET_V6=$(head -n1 $WG_CONFIG | awk '{print $3}')
       PRIVATE_SUBNET_MASK_V6=$(echo "$PRIVATE_SUBNET_V6" | cut -d "/" -f 2)
@@ -1000,15 +1001,22 @@ else
 
 	fi
 
+
+	if [[ ${USE_OTP} != 0 ]]; then
+
+		expire_date=$(date -d "+${USE_OTP} hours" '+%Y%m%d%H%M')	
+	fi
+
+
 	# Get the client name
 	NEW_CLIENT_NAME=$(echo ${NEW_CLIENT_NAME} | cut -d: -f1)
 
-      echo "# $NEW_CLIENT_NAME-${CLIENT_ADDRESS_V4} start
+      echo "# $NEW_CLIENT_NAME-${CLIENT_ADDRESS_V4}-expire-${expire_date} start
 [Peer]
 PublicKey = $CLIENT_PUBKEY
 PresharedKey = $PRESHARED_KEY
 AllowedIPs = $CLIENT_ADDRESS_V4/32,$CLIENT_ADDRESS_V6/128
-# $NEW_CLIENT_NAME-${CLIENT_ADDRESS_V4} end" >>$WG_CONFIG
+# $NEW_CLIENT_NAME-${CLIENT_ADDRESS_V4}-expire-${expire_date} end" >>$WG_CONFIG
       echo "# $NEW_CLIENT_NAME
 [Interface]
 Address = $CLIENT_ADDRESS_V4/$PRIVATE_SUBNET_MASK_V4,$CLIENT_ADDRESS_V6/$PRIVATE_SUBNET_MASK_V6
@@ -1050,7 +1058,24 @@ PublicKey = $SERVER_PUBKEY" >>${WG_CLIENTS}/"$NEW_CLIENT_NAME"-$WIREGUARD_PUB_NI
         # shellcheck disable=SC1117
 	REMOVECLIENT="$(echo ${ADD_CLIENT_NAME} | cut -d: -f1)"
 	IPV4="$(echo ${ADD_CLIENT_NAME} | cut -d: -f2)"
-        sed -i "/\# $REMOVECLIENT-${IPV4} start/,/\# $REMOVECLIENT-${IPV4} end/d" $WG_CONFIG
+
+	# Get the user-IP-expiredate
+	info="$(egrep -o "${REMOVECLIENT}-${IPV4}-expire-[0-9]{12}" ${WG_CONFIG} | uniq)"
+
+	# Get PublicKey
+	pub="$(sed -n "/${info} start/,/${info} end/p" ${WG_CONFIG} |grep PublicKey | awk ' { print $3 } ')"
+
+	# Delete their public key from the WG server and drop their access immediately
+	wg set wg0 peer ${pub} remove
+
+	if [[ $? -ne 0 ]]; then
+
+		exit 1 
+	fi
+
+	# Remove the Peer configuration
+        sed -i "/\# ${REMOVECLIENT}-${IPV4}-expire-[0-9]\{12\} start/,/\# ${REMOVECLIENT}-${IPV4}-expire-[0-9]\{12\} end/d" ${WG_CONFIG}
+
 
 	# Reload wireguard config file without dropping existing connections.
 	wg addconf wg0 <(wg-quick strip wg0)

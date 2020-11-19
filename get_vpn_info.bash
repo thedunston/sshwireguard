@@ -2,7 +2,7 @@
 
 ####    EDIT IF DIFFERENT FROM THE DEFAULT LOCATION     ####
 
-WG_CONFIG='/etc/wireguard/wg0.conf'
+WG_CONFIG="/etc/wireguard/wg0.conf"
 
 ####    END EDITING     ####
 
@@ -31,12 +31,6 @@ if [[ ! -f "${WG_CONFIG}" ]]; then
 
 fi
 
-# Get the network for the VPn
-get_net=$(head -n1 ${WG_CONFIG} | awk ' { print $2 } ' | cut -d, -f1)
-
-# Get the current IPs and sort
-net_id="$(echo ${get_net} |awk -F\. ' { print $1"."$2"."$3 } ')"
-
 function chk_config() {
 
 	# When there are no more gaps in IPs, only the VPN network ID is left
@@ -46,7 +40,7 @@ function chk_config() {
 	if [[ ${get_num} -eq 1 || ${get_num} -eq 2 ]]; then
 
 		# Get the last IP
-		TMP_OCTET=$(egrep -o "^AllowedIPs = ${net_id}.[0-9]{1,3}" /etc/wireguard/wg0.conf | awk ' { print $3 } ' | cut -d\. -f4 | sort  -n | tail -1)
+		TMP_OCTET=$(egrep -o "^AllowedIPs = 10.8.0.[0-9]{1,3}" /etc/wireguard/wg0.conf | awk ' { print $3 } ' | cut -d\. -f4 | sort  -n | tail -1)
 
 		# Add 1
 		LAST_OCTET=$( expr ${TMP_OCTET} + 1 )
@@ -71,6 +65,8 @@ if [[ ! -f "${vpn_info}/vpn_info.txt" || -z "${vpn_info}/vpn_info.txt" ]]; then
 
 fi
 
+# Get the network for the VPn
+get_net=$(head -n1 ${WG_CONFIG} | awk ' { print $2 } ' | cut -d, -f1)
 
 # Check that only a valid network was returned
 clean_val=$(echo "${get_net}" | egrep '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{2}$')
@@ -83,8 +79,10 @@ if [[ "${get_net}" != "" ]]; then
 	# Return the network
 	echo "${get_net}" > ${vpn_info}/vpn_info.txt
 
+	# Get the current IPs and sort
+	net_id="$(echo ${get_net} |awk -F\. ' { print $1"."$2"."$3 } ')"
+
 	# Gets the IPs and gets prints any that are missing since a user can specify a static IP
-	# https://stackoverflow.com/questions/38491676/how-can-i-find-the-missing-integers-in-a-unique-and-sequential-list-one-per-lin
 	egrep -o "^AllowedIPs = ${net_id}\.[0-9]{1,3}" ${WG_CONFIG} | awk ' { print $3 } ' | cut -d\. -f4 |  sort -n | awk '{for(i=p+1; i<$1; i++) print i} {p=$1}' | egrep -v '^1$' >> ${vpn_info}/vpn_info.txt
 
 	chk_config
