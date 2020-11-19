@@ -2,13 +2,44 @@
 
 # VPN SERVER
 # ex. vpn_server="my.server.com"
-vpn_server="myserver.com"
+vpn_server="my.server.com"
 
 # ex. ping_ip="10.8.0.1"
-ping_ip=""
+ping_ip="10.8.0.1"
+
+tmpFile="/tmp/wg"
 
 # See if Mac OS
 if_mac="$(uname -a |egrep '^Darwin' | awk ' { print $1 }')"
+
+function do_otp () {
+
+	# Login via SSH
+	curl https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "action=a" -F "username=${user}" -F "password=${pass}" -o "${tmpFile}"
+
+	# Check to see if the Send OTP was sent back
+	egrep '^Send OTP$' "${tmpFile}"
+
+	# If successful prompt for the OTP code
+	if [[ $? -eq 0 ]]; then
+
+
+		read -p "Please enter the OTP Code: " the_code
+
+	elif [[ "$(grep '[Interface]' ${tmpFile})" != "" ]]; then
+
+		bring_up_vpn
+		exit 0
+
+	else
+
+		# Else exit with the error message
+		cat "${tmpFile}"
+		exit 1
+
+	fi
+
+} # END do_otp function
 
 # Check if MacOS.  Brew is installed as non-root user.
 # So that check is first and then the script is run
@@ -122,7 +153,6 @@ function bring_up_vpn(){
 }
 
 
-tmpFile="/tmp/wg"
 
 # User's with some special characters like spaces at the end of their password
 # were being stripped so this embedded python prompt preserves those characters
@@ -373,7 +403,11 @@ while getopts 'itsrdhxzy:f:' OPTION; do
 
 pass=$(get_p)
 
-		curl https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=a" -o "${tmpFile}"
+		# OTP
+		do_otp
+
+		# Login with the OTP and the action to perform
+		curl https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=a" -F "code=${the_code}" -o "${tmpFile}"
 		
 		bring_up_vpn
 
@@ -435,10 +469,11 @@ pass=$(get_p)
 		echo -n "Please enter your SSH username: "
 		read user
 
-#		echo -n "Please enter your password: "
-#		read -s pass	
 
 pass=$(get_p)
+		# OTP
+		do_otp
+
 		curl https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=d" -F "static_ip=${static_ip}" -o "${tmpFile}"
 		
 		# empty pass variable before enabling stty echo
@@ -471,6 +506,11 @@ pass=$(get_p)
 			read user
 	
 	pass=$(get_p)
+
+
+			# OTP
+			do_otp
+
 			curl https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=a" -F "static_ip=${static_ip}" -o "${tmpFile}"
 			
 			bring_up_vpn
