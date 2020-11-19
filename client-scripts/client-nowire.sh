@@ -2,7 +2,7 @@
 
 # VPN SERVER
 # ex. vpn_server="my.server.com"
-vpn_server="hawk.sukkha.info"
+vpn_server="my.server.com"
 
 # ex. ping_ip="10.8.0.1"
 ping_ip="10.8.0.1"

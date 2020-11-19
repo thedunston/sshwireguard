@@ -135,6 +135,8 @@ OTP_HOURS=48
 
 FreeOTP and Google Authenticator were tested.
 
+When a user changes their password on the SSH server, it will break their ability to use OTP because their unique secret is being protected with their password.  The script nowire/register.php can be used to enter the old SSH password and the new one in order to continue using their existing OTP authenticator.
+
 ## CLIENT SCRIPT
 
 Since the VPN IP may be behind NAT, the client scripts will need to be edited manually before distributing to users to setup their VPN peer.
