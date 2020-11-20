@@ -43,6 +43,19 @@ However, if you want to manually configure settings then run:
 
 ### Nowire configuration setup
 
+Sample install session (You will have to configure SSL with Apache):
+
+<pre>
+apt install apache2 php7.2 php7.2-ssh2 php7.2-sqlite3 sqlite3
+git clone https://github.com/thedunston/nowire.git
+cd nowire/
+HEADLESS_INSTALL=y sudo ./wireguard-server.sh --install
+sudo apt install jq
+sudo bash nowire-setup.bash
+sudo wg-quick up wg0
+
+</pre>
+
 Automatic setup
 
 <pre>

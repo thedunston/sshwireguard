@@ -237,6 +237,7 @@ fi
 
 # copy files to their respective directories
 cp get_vpn_info.bash get_max_ips.bash wireguard-server.sh vpn_info.txt ${config_nowire}
+cp -rp otp/  ${config_nowire}/
 chmod 700 ${config_nowire}/{get_vpn_info.bash,wireguard-server.sh}
 chown nobody: ${config_nowire}/{get_vpn_info.bash,wireguard-server.sh}
 
@@ -258,8 +259,9 @@ function setotp() {
 
 	
 			# call on OTP setup
-			bash otp/setup_otp.bash
-			chown www-data: otp/nowire.db
+			cd ${config_nowire}/otp/
+			bash setup_otp.bash
+			chown www-data: nowire.db
 
 		else
 
