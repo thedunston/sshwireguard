@@ -25,6 +25,7 @@ Prerequisites:
 - php-ssh2
 - HTTPS connection to the VPN server.
 - Wireguard-Manager has its own dependencies (jq, qrencode)
+- PHP Sqlite Module and Sqlite if you use OTP
 
 ## Setup
 
