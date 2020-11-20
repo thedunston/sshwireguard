@@ -56,7 +56,7 @@ sudo wg-quick up wg0
 
 </pre>
 
-Automatic setup
+If you already have Wireguard, Apache, and PHP installed then just run the *nowire-setup.bash* script. 
 
 <pre>
 bash nowire-setup.bash
