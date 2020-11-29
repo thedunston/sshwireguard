@@ -13,23 +13,41 @@ Start-Process Powershell -ArgumentList $PSCommandPath -Verb RunAs
 
 }
 
-# Check if file exists
-$wg_file = "wireguard-amd64-0.1.1.msi"
-$wg_Path = "$env:USERPROFILE\$wg_file"
-$Uri_wg = "https://download.wireguard.com/windows-client/$wg_file"
-if (Test-Path -Path "c:\windows\system32\wg.exe") {
+# Check if Chocolatey installed
+choco -?
+$ChocolateyInstalled = $?
 
-    echo "Wireguard installed."
-    sleep 1
-    
-} else {
+# Check if WireGuard exists in System32
+if (Test-Path -Path "C:\Windows\System32\wg.exe") {
+    Write-Host "WireGuard installed."
+    Start-Sleep 1
+}
+# Check if WireGuard exists in Program Files
+elseif (Test-Path -Path "C:\Program Files\WireGuard\wg.exe") {
+    Write-Host "WireGuard installed."
+    Start-Sleep 1
+}
+# Use Chocolatey to install WireGuard
+elseif (-Not $ChocolateyInstalled) {
+    Write-Host "WireGuard not installed."
+    Write-Host "Installing Chocolatey package manager . . ."
 
-    write-host "Downloading wireguard..."
-    #$result = Invoke-WebRequest -Uri $Uri_wg -OutFile $wg_Path
-    
-    write-host "Installing wireguard..."
-    start-process msiexec.exe /i, $wg_Path, /qb -Wait -Passthru
+    # Install Chocolatey
+    Set-ExecutionPolicy Bypass -Scope Process -Force; `
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
+    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
+    # Install WireGuard
+    refreshenv
+    Write-Host "Installing WireGuard . . ."
+    choco install -y wireguard
+} 
+elseif ($ChocolateyInstalled) {
+    Write-Host "Chocolatey installed."
+    if ($null -eq (choco list -local | Select-String -Pattern "wireguard")) {
+        Write-Host "WireGuard not installed."
+        choco install -y wireguard
+    }
 }
 
 $userPath = "$env:USERPROFILE\wgvpn.conf"
@@ -38,7 +56,7 @@ $userVPNName = "wgvpn"
 
 function allDone (){
 
-    write-host ""
+    Write-Host ""
     Read-Host -Prompt "Enter to return to main menu."
     menu
 
@@ -46,19 +64,19 @@ function allDone (){
 
 function check_connection() {
 
-    echo "Testing connectivity..."
+    Write-Output "Testing connectivity..."
     # Test to see if the VPN is up.
     if (Test-Connection -ComputerName $ping_ip -Count 5) {
                         
         # If so, print the message
-        write-host -BackgroundColor green -ForegroundColor white "VPN is up"
+        Write-Host -BackgroundColor Green -ForegroundColor White "VPN is up"
 
         allDone
             
     } else {
             
         # Else print an error
-        write-host -BackgroundColor red -ForegroundColor white "VPN is not working properly."
+        Write-Host -BackgroundColor Red -ForegroundColor White "VPN is not working properly."
         wg show $userVPNName
         allDone
 
@@ -68,7 +86,7 @@ function check_connection() {
 
 function menu() {
 
-clear
+Clear-Host
 write-host "[1] Install VPN Service"
 write-host "[2] Remove VPN Service"
 write-host "[3] Start VPN Service"
@@ -92,7 +110,7 @@ $choice = Read-Host -Prompt "Please type the value in the square brackets"
         7 {check_auth}
         8 {user_register}
         "E" {return}
-        default {write-host -BackgroundColor red -ForegroundColor white "Invalid value"
+        default {Write-Host -BackgroundColor Red -ForegroundColor White "Invalid value"
                  menu}
 
     }
@@ -105,7 +123,7 @@ function start_vpn () {
 
     Start-Service $userVPN
 
-    sleep 5
+    Start-Sleep 5
 
     check_connection
 
@@ -117,15 +135,15 @@ function stop_vpn () {
     write-host "Please wait stopping the VPN..."
     Stop-Service $userVPN
 
-        sleep 5
+        Start-Sleep 5
 
     try            
     
-    { Test-Connection -ComputerName $ping_ip -Count 5 -ErrorAction stop }            
+    { Test-Connection -ComputerName $ping_ip -Count 5 -ErrorAction Stop }            
             
     catch [System.Net.NetworkInformation.PingException] {
 
-        write-host -BackgroundColor Green  "VPN stopped"
+        Write-Host -BackgroundColor Green "VPN stopped"
        
     }
 
@@ -167,7 +185,7 @@ function check_vpn() {
             } else {
         
                 # Close the program
-                write-host "Closing the program."
+                Write-Host "Closing the program."
                 return
         
             }
@@ -177,7 +195,7 @@ function check_vpn() {
         
         
             # Delete the config file
-            rm $userPath
+            Remove-Item $userPath
 
             # Get a new VPN Config
             get_vpn_config
@@ -235,14 +253,14 @@ function user_login() {
    # Prompt for credentials
     $user = Read-Host -Prompt "What is your username "
     $upass = Read-Host -Prompt "What is your password " -AsSecureString
-    write-host -BackgroundColor black -ForegroundColor white "Logging in"
+    Write-Host -BackgroundColor Black -ForegroundColor White "Logging in"
     # Convert password to plaintext to pass to the remote server.
     $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($upass)
     $value = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr)
     $b64_pass = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($value))
         $global:Form = @{
-            username  = "$user"
-            password      = "$b64_pass"
+            username = "$user"
+            password = "$b64_pass"
             action = "a"
             submit = "Login"
         }
@@ -255,11 +273,11 @@ user_login
 
     # Use TLS
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    $Result = Invoke-WebRequest -Uri $Uri_Check_Auth  -Method Post -Body $global:Form -OutFile "$userPath" 
+    $Result = Invoke-WebRequest -Uri $Uri_Check_Auth -Method Post -Body $global:Form -OutFile "$userPath" 
     
     # Check if the configuration file was downloaded.
-    type "$userPath"
-    sleep 2
+    Get-Content "$userPath"
+    Start-Sleep 2
     $global:Form = ""
     menu
 
@@ -274,8 +292,8 @@ function get_vpn_config() {
     $Result = Invoke-WebRequest -Uri $Uri -Method Post -Body $global:Form -OutFile "$userPath" 
     
     $global:Form = @{
-            username  = "$user"
-            password      = "$b64_pass"
+            username = "$user"
+            password = "$b64_pass"
             action = "a"
             submit = "Login"
         }
@@ -294,16 +312,16 @@ function get_vpn_config() {
         & 'C:\Program Files\WireGuard\wireguard.exe' /installtunnelservice $userPath
 
         write-host -BackgroundColor green -ForegroundColor white "Bringing up the connection.  Please wait..."
-        sleep 3
+        Start-Sleep 3
 
         check_connection 
 
     } else {
         
         write-host -BackgroundColor red -ForegroundColor white "Error Downloading the VPN configuration"
-        type "$userPath"
+        Get-Content "$userPath"
     
-        read-host -Prompt "Press enter when done."
+        Read-Host -Prompt "Press enter when done."
     }
 
 } # end get_vpn_config
