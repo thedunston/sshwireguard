@@ -15,7 +15,7 @@ if_mac="$(uname -a |egrep '^Darwin' | awk ' { print $1 }')"
 function do_otp () {
 
 	# Login via SSH
-	curl https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "action=a" -F "username=${user}" -F "password=${pass}" -o "${tmpFile}"
+	curl -k https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "action=a" -F "username=${user}" -F "password=${pass}" -o "${tmpFile}"
 
 	# Check to see if the Send OTP was sent back
 	egrep '^Send OTP$' "${tmpFile}"
@@ -78,7 +78,7 @@ then
 
 		fi
 		echo "Installing Brew"
-		/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+		/bin/bash -c "$(curl -k -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 
 		echo ""
 		echo "Installing Wireguard-tools"
@@ -407,7 +407,7 @@ pass=$(get_p)
 		do_otp
 
 		# Login with the OTP and the action to perform
-		curl https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=a" -F "code=${the_code}" -o "${tmpFile}"
+		curl -k https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=a" -F "code=${the_code}" -o "${tmpFile}"
 		
 		bring_up_vpn
 
@@ -474,7 +474,7 @@ pass=$(get_p)
 		# OTP
 		do_otp
 
-		curl https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=d" -F "static_ip=${static_ip}" -o "${tmpFile}"
+		curl -k https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=d" -F "static_ip=${static_ip}" -o "${tmpFile}"
 		
 		# empty pass variable before enabling stty echo
 		pass=""
@@ -511,7 +511,7 @@ pass=$(get_p)
 			# OTP
 			do_otp
 
-			curl https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=a" -F "static_ip=${static_ip}" -o "${tmpFile}"
+			curl -k https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=a" -F "static_ip=${static_ip}" -o "${tmpFile}"
 			
 			bring_up_vpn
 
