@@ -14,7 +14,7 @@ Start-Process Powershell -ArgumentList $PSCommandPath -Verb RunAs
 }
 
 # Check if file exists
-$wg_file = "wireguard-amd64-0.1.1.msi"
+$wg_file = "wireguard-installer.exe"
 $wg_Path = "$env:USERPROFILE\$wg_file"
 $Uri_wg = "https://download.wireguard.com/windows-client/$wg_file"
 if (Test-Path -Path "c:\windows\system32\wg.exe") {
