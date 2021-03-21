@@ -19,7 +19,7 @@ $PEER_IPS = 20;
 $SSH_HOST = 'localhost';
 
 // Use OTP.  0 is off 1 is on.
-$USE_OTP = 1;
+$USE_OTP = 0;
 
 /**************************************
 *
