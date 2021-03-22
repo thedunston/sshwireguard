@@ -47,7 +47,7 @@ However, if you want to manually configure settings then run:
 Sample install session (You will have to configure SSL with Apache):
 
 <pre>
-apt install apache2 php7.2 php7.2-ssh2 php7.2-sqlite3 sqlite3
+apt install apache2 php7.2 php7.2-ssh2 php7.2-sqlite3 sqlite3 php7.2-mbstring php7.2-mbstring php-imagick
 git clone https://github.com/thedunston/nowire.git
 cd nowire/
 HEADLESS_INSTALL=y sudo ./wireguard-server.sh --install
@@ -82,6 +82,7 @@ chown www-data: /var/peers/wireguard-nowire/{tmp,clients}
 cp get_vpn_info.bash wireguard-server.sh /var/peers/wireguard-nowire/
 chown nobody: /var/peers/wireguard-nowire/{get_vpn_info.bash,wireguard-server.sh}
 chown www-data: /var/peers/wireguard-nowire/tmp/
+chown www-data: /var/peers/wireguard-nowire/otp
 
 #Copy the wgcheck.php script to the web root.  Currently, a directory named "nowire" is required in the webroot
 
