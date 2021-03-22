@@ -154,6 +154,10 @@ function on_err() {
 		# Create Database
 		bash sqlite-db.bash
 		on_err "Error creating the database"
+		
+		# Set permissions for web user
+		chown www-data: ${nowire_config}/otp
+		chown www-data: ${nowire_config}/otp/nowire.db
 
 	else
 
