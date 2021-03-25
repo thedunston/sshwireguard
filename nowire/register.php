@@ -77,32 +77,6 @@ if ($_POST['submit'] == "Register") {
 	
 	}
 	 
-	// Display QR Code
-	// Method is used to print the image to the screen
-	// and then delete the qrcode
-	for ($i=0; $i<2; $i++) {
-
-		ob_flush();
-		flush();
-	
-		if ($i == 0) {
-
-			echo "<p>";
-			echo "<p>Please download freeotp and scan the QR Code below.";
-			echo "<p>";
-			echo "<img src='$username-qrcode.png'";
-			echo "'>";
-			echo "<p>";
-
-		}
-
-		sleep(1);
-
-	}
-	
-        $file = null;
-        unlink("$webroot/$username-qrcode.png");
-
 	// Escape unsafe DB characters
 	$username_escaped = SQLite3::escapeString($username);
 
@@ -116,7 +90,32 @@ if ($_POST['submit'] == "Register") {
 	$chk = select_user($username);
 	if ($chk[0] == "YES") {
 
-		the_msg("User account created.");
+		echo "--------------------- User account created ---------------------";
+                $the_image = "";
+                // Display QR Code
+                // Method is used to print the image to the screen
+                // and then delete the qrcode
+                for ($i=0; $i<2; $i++) {
+
+                        ob_flush();
+                        flush();
+
+                        if ($i == 0) {
+
+                                echo "<p>";
+                                echo "<p>Please download freeotp and scan the QR Code below.";
+                                echo "<p>";
+                                echo "<img src='$username-qrcode.png'";
+                                echo "'>";
+                                echo "<p>";
+
+                        }
+
+                        sleep(1);
+
+                }
+                unlink("$webroot/$username-qrcode.png");
+                $file = null;
 	
 	} else {
 	
