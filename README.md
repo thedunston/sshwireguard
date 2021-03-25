@@ -29,6 +29,28 @@ Prerequisites:
 
 ## Setup
 
+### Nowire configuration setup
+
+Sample install session (You will have to configure SSL with Apache):
+
+<pre>
+apt install apache2 php php-ssh2 php-sqlite3 sqlite3 php-mbstring php-imagick jq
+git clone https://github.com/thedunston/nowire.git
+cd nowire/
+HEADLESS_INSTALL=y sudo ./wireguard-server.sh --install
+sudo bash nowire-setup.bash
+sudo wg-quick up wg0
+
+</pre>
+
+If you already have Wireguard, Apache, and PHP installed then just run the *nowire-setup.bash* script. 
+
+<pre>
+bash nowire-setup.bash
+</pre>
+
+to setup the nowire configuration directory and add the nowire directory and scripts to your web directory.
+
 ###Wireguard Setup
 
 Wireguard needs to be installed first.  **If you already have Wireguard installed, then skip this step.**  Run the script *wireguard-server.sh* and follow the prompts or the easiest method is to run it Headless from the commandline:
