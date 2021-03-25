@@ -12,11 +12,27 @@ tmpFile="/tmp/wg"
 # See if Mac OS
 if_mac="$(uname -a |egrep '^Darwin' | awk ' { print $1 }')"
 
+# Check if there is an error running curl.
+function check_curl() {
+
+	if [[ $? -eq 6 ]]; then
+
+		echo 
+		echo "Error running curl."
+		echo "Ensure the my.server.com variable has been changed to your VPN server IP or domain name at the top of client-network.bash script."
+		echo 
+		exit 1
+
+	fi
+
+}
+
 function do_otp () {
 
 	# Login via SSH
 	curl -k https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "action=a" -F "username=${user}" -F "password=${pass}" -o "${tmpFile}"
 
+	check_curl
 	# Check to see if the Send OTP was sent back
 	egrep '^Send OTP$' "${tmpFile}"
 
@@ -79,6 +95,7 @@ then
 		fi
 		echo "Installing Brew"
 		/bin/bash -c "$(curl -k -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+		check_curl
 
 		echo ""
 		echo "Installing Wireguard-tools"
@@ -314,7 +331,7 @@ function which_os() {
 	
 	case "${the_os}" in
 	
-		Ubuntu)
+		Ubuntu|"Linux Mint")
 	
 		check_package "curl wg resolvconf" "apt update" "apt install --no-install-recommends wireguard-tools -y" "apt install curl resolvconf -y"
 	
@@ -408,6 +425,7 @@ pass=$(get_p)
 
 		# Login with the OTP and the action to perform
 		curl -k https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=a" -F "code=${the_code}" -o "${tmpFile}"
+		check_curl
 		
 		bring_up_vpn
 
@@ -475,6 +493,7 @@ pass=$(get_p)
 		do_otp
 
 		curl -k https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=d" -F "static_ip=${static_ip}" -o "${tmpFile}"
+		check_curl
 		
 		# empty pass variable before enabling stty echo
 		pass=""
@@ -512,6 +531,7 @@ pass=$(get_p)
 			do_otp
 
 			curl -k https://${vpn_server}/nowire/wgcheck.php -F 'submit=Login' -F "username=${user}" -F "password=${pass}" -F "action=a" -F "static_ip=${static_ip}" -o "${tmpFile}"
+			check_curl
 			
 			bring_up_vpn
 
