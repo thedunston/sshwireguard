@@ -64,29 +64,6 @@ However, if you want to manually configure settings then run:
 
 <pre>./wireguard-server.sh --install</pre>
 
-### Nowire configuration setup
-
-Sample install session (You will have to configure SSL with Apache):
-
-<pre>
-apt install apache2 php7.2 php7.2-ssh2 php7.2-sqlite3 sqlite3 php7.2-mbstring php7.2-mbstring php-imagick
-git clone https://github.com/thedunston/nowire.git
-cd nowire/
-HEADLESS_INSTALL=y sudo ./wireguard-server.sh --install
-sudo apt install jq
-sudo bash nowire-setup.bash
-sudo wg-quick up wg0
-
-</pre>
-
-If you already have Wireguard, Apache, and PHP installed then just run the *nowire-setup.bash* script. 
-
-<pre>
-bash nowire-setup.bash
-</pre>
-
-to setup the nowire configuration directory and add the nowire directory and scripts to your web directory.
-
 #### Manual Setup
 
 If you want to edit the scripts manually then add the full path of the wireguard configuration file to the top of get_vpn_info.bash and get_max_ips.bash to the WG_CONFIG line.  Edit the files nowire/config.php and change the settings as needed there, as well.
