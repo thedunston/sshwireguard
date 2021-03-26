@@ -34,7 +34,7 @@ Prerequisites:
 Sample install session (You will have to configure SSL with Apache):
 
 <pre>
-apt install apache2 php php-ssh2 php-sqlite3 sqlite3 php-mbstring php-imagick jq
+apt install apache2 php php-ssh2 php-sqlite3 sqlite3 php-mbstring php-imagick jq bc
 git clone https://github.com/thedunston/nowire.git
 cd nowire/
 HEADLESS_INSTALL=y sudo ./wireguard-server.sh --install
