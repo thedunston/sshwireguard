@@ -1,23 +1,26 @@
 # Nowire
+
+## Background
 Nowire was created because I wanted to make it easier for students to gain access to our VPN.  I really like how simple the configuration and management of Wireguard is and how it only manages the crypto for the VPN tunnels.  Since there is no manager for it, I decided to create a program that allows configuring a VPN peer without a lot of configuration by those using the VPN.  Those with Linux and Macs sometimes have a lot more configuration to do for many VPN solutions, though the Wireguard GUI makes it easier on Windows and Mac.
 
 I started playing around with containers and wanted to connect those across multiple servers so that and wanting students to quickly connect to a VPN led to the creation of Nowire.  The name nowire comes from the fact that I'm not good at naming things and since the VPN peers were connecting from remote locations without a wire...nowire.
 
 Nowire is written in PHP, bash, and there is a Powershell script for Windows that allows quickly setting up VPN peers.  The Nowire VPN configuration is based on Prajwal Koirala's Wireguard Manager - https://github.com/complexorganizations/wireguard-manager/blob/main/wireguard-server.sh, which is a shell script to setup a Wireguard VPN, manage the VPN service, and configure peers. I found it to be the easiest program to setup a Wireguard VPN.  
 
-The VPN peers run the script client-nowire.sh or WindowsNowire.ps1, authenticate via the PHP script using the PHP-SSH2 module, and automatically downloads the auto-generated VPN file, and automatically configures the Wireguard interface.
+## Nowire Authentication and Client configurations
+
+The VPN peers run the script client-nowire.sh or WindowsNowire.ps1, authenticate via the PHP script using the PHP-SSH2 module, and automatically downloads the auto-generated VPN peer configuration file, and automatically configures the Wireguard interface.
 
 The authentication is managed using the PHP SSH2 module.  The SSH server can be on a different host than the VPN.
 
-*NOTE: The SSH password prompt is an embedded python script in the client-nowire.sh.  Users with some special characters get stripped in bash so Python was used to preserve special characters and base64 encode the password.  It is then base64 decoded on the remote server with the PHP script.  Accordingly, the base64 encoding is only for preserving the integrity of the user's password special characters.*
+*NOTE: The SSH password prompt is an embedded python script in the client-nowire.sh.  Users with some special characters get stripped in bash so Python was used to preserve special characters and base64 encode the password.  It is then base64 decoded on the remote server with the PHP script.  Accordingly, the base64 encoding is **only** for preserving the integrity of the user's password special characters.*
 
-A user can select a static IP or assigned a dynamic IP. 
-
-There is a script: get_vpn_info.bash which checks for any gaps in assigned IPs and assigns based on that first.  Otherwise, IPs are assigned sequentially using the Wireguard Manager script.  If the last dynamic IP assigned is X.X.X.5 and a static IP is set with X.X.X.100 there will be a large gap in the number of unused IPs.  The Wireguard-Manager script assigns IPs sequentially so the next dynamic IP would X.X.X.101.  The script get_vpn_info.bash resolves that issue by retrieving all IPs in the VPN configuration file, sorts them sequentially, and returns a list of the unused octets.  Those are stored in vpn_info.txt, which was created to mitigate the web server user from having to read the Wireguard VPN configuration file.
+##  Nowire IP Assignment Management
+There is a script: *get_vpn_info.bash* which checks for any gaps in assigned IPs and assigns based on that first.  Otherwise, IPs are assigned sequentially.  If the last dynamic IP assigned is X.X.X.5 and a static IP is set with X.X.X.100 there will be a large gap in the number of unused IPs.  The *wireguard-server.sh* script assigns IPs sequentially so the next dynamic IP would X.X.X.101.  The script *get_vpn_info.bash* resolves that issue by retrieving all IPs in the VPN configuration file, sorts them sequentially, and returns a list of the unused octets.  Those are stored in *vpn_info.txt*, which was created to mitigate the web server user from having to read the Wireguard VPN configuration file.
 
 The VPN client scripts have been tested on arch Linux, Ubuntu 18+, Debian 9, Fedora, CentOS, MacOS, and Windows 10.
 
-Prerequisites:
+### Prerequisites:
 
 - Linux server
 - Apache
@@ -29,42 +32,26 @@ Prerequisites:
 
 ## Setup
 
-### Nowire configuration setup
+### Nowire install on VPN Server
 
-Sample install session (You will have to configure SSL with Apache):
+Install session (You will have to configure SSL with Apache).
 
 <pre>
-apt install apache2 php php-ssh2 php-sqlite3 sqlite3 php-mbstring php-imagick jq bc
+apt update
+apt install apache2 php php-ssh2 php-sqlite3 sqlite3 php-mbstring php-imagick jq bc qrencode
 git clone https://github.com/thedunston/nowire.git
 cd nowire/
 HEADLESS_INSTALL=y sudo ./wireguard-server.sh --install
 sudo bash nowire-setup.bash
-sudo wg-quick up wg0
-
+visudo
+     (add the line below and change 'hostname' to your webserver's hostname)
+www-data hostname = NOPASSWD: /bin/bash /var/peers/wireguard-nowire/tmp/wg-add.bash
+     (exit visudo)
+wg-quick up wg0
+sudo systemctl enable wg-quick@wg0
 </pre>
 
-If you already have Wireguard, Apache, and PHP installed then just run the *nowire-setup.bash* script. 
-
-<pre>
-bash nowire-setup.bash
-</pre>
-
-to setup the nowire configuration directory and add the nowire directory and scripts to your web directory.
-
-###Wireguard Setup
-
-Wireguard needs to be installed first.  **If you already have Wireguard installed, then skip this step.**  Run the script *wireguard-server.sh* and follow the prompts or the easiest method is to run it Headless from the commandline:
-
-<pre>cd nowire
-HEADLESS_INSTALL=y ./wireguard-server.sh --install</pre>
-
-and it will setup Wireguard automatically and download all necessary packages.
-
-However, if you want to manually configure settings then run:
-
-<pre>./wireguard-server.sh --install</pre>
-
-#### Manual Setup
+#### Nowire Manual Setup
 
 If you want to edit the scripts manually then add the full path of the wireguard configuration file to the top of get_vpn_info.bash and get_max_ips.bash to the WG_CONFIG line.  Edit the files nowire/config.php and change the settings as needed there, as well.
 
@@ -82,37 +69,74 @@ cp get_vpn_info.bash wireguard-server.sh /var/peers/wireguard-nowire/
 chown nobody: /var/peers/wireguard-nowire/{get_vpn_info.bash,wireguard-server.sh}
 chown www-data: /var/peers/wireguard-nowire/tmp/
 chown www-data: /var/peers/wireguard-nowire/otp
+</pre>
 
-#Copy the wgcheck.php script to the web root.  Currently, a directory named "nowire" is required in the webroot
+Edit your */etc/sudoers* file or use:
 
+<pre>visudo</pre>
+
+and add the line below and change *hostname* to your web server's hostname:
+
+<pre>www-data hostname = NOPASSWD: /bin/bash /var/peers/wireguard-nowire/tmp/wg-add.bash</pre>
+
+Copy the wgcheck.php script to the web root.  Currently, a directory named "nowire" is required in the webroot
+
+<pre>
 cp -rp nowire /var/www/html/nowire
 chown nobody: /var/www/html/nowire/{config.php,wgcheck.php}
 </pre>
 
-Finally, copy the "nowire" directory into your web root.
+Finally, copy the *nowire* directory into your web root.
+
+Clone the repo and run the setup script.  When you run the setup script, be sure it points to the directories you selected if different than the defaults above:
+
+<pre>
+
+git clone https://github.com/thedunston/nowire.git
+cd nowire/
+HEADLESS_INSTALL=y sudo ./wireguard-server.sh --install
+sudo bash nowire-setup.bash
+wg-quick up wg0
+sudo systemctl enable wg-quick@wg0
+</pre>
+
+If you want to manually configure your wireguard settings then run:
+
+
+<pre>
+
+git clone https://github.com/thedunston/nowire.git
+cd nowire/
+sudo ./wireguard-server.sh --install
+sudo bash nowire-setup.bash
+wg-quick up wg0
+sudo systemctl enable wg-quick@wg0
+</pre>
+
 
 #### End nowire manual setup
 
-## Sudo setup
-In order for the web server user to run the scripts as root, which are needed to prevent the web user from having access to the wireguard configuration files, add the following to the /etc/sudoers file. Change "hostname" to the hostname of your VPN server based on what is in /etc/hostname.  Also, change www-data to the user running the web server and the change the location of /var/peers/wireguard-nowire/tmp/ to the directory you selected to store the nowire configuration files
+### Existing Wireguard Installation
+
+**If you already have Wireguard installed** be sure you have the other pre-requisites.
+
+ <pre>apache2 php php-ssh2 php-sqlite3 sqlite3 php-mbstring php-imagick jq bc qrencode</pre>
+ 
+Clone the repo and run the setup script:
 
 <pre>
-www-data hostname = NOPASSWD: /bin/bash /var/peers/wireguard-nowire/tmp/wg-add.bash
+git clone https://github.com/thedunston/nowire.git
+cd nowire/
+sudo bash nowire-setup.bash
+wg-quick up wg0
+sudo systemctl enable wg-quick@wg0
 </pre>
-
-The file wg-add.bash is created dynamically and deleted after it adds or removes a VPN user.
 
 #### OTP Setup
 
-During the install, you can select the option to enable OTP.  Otherwise, you can edit nowire/config.php and change:
+During the install, you can select the option to enable OTP.  Otherwise, you can run it later with the command:
 
-<pre>$USE_OTP = 0;</pre>
-
-to
-
-<pre>$USE_OTP = 1;</pre>
-
-and change 
+bash /var/peers/wireguard-nowire/otp/setup_otp.bash
 
 Next, add the file get_expire_account.bash to cron and run it hourly.
 
@@ -148,9 +172,13 @@ Will work:
 OTP_HOURS=48
 </pre>
 
-FreeOTP and Google Authenticator were tested.
-
 When a user changes their password on the SSH server, it will break their ability to use OTP because their unique secret is being protected with their password.  The script nowire/register.php can be used to enter the old SSH password and the new one in order to continue using their existing OTP authenticator.
+
+Users will need to browse to:
+
+https://yourserver/nowire/register.php
+
+to enable OTP.  They will authenticate using their SSH username and password and will receive a QRCode to associate with their account.  FreeOTP and Google Authenticator were tested.
 
 ## CLIENT SCRIPT
 
