@@ -146,7 +146,7 @@ function usage() {
     case "${1}" in
     --install)
       shift
-      HEADLESS_INSTALL=${HEADLESS_INSTALL:-y}
+      HEADLESS_INSTALL=${HEADLESS_INSTALL:-n}
       ;;
     --start)
       shift
