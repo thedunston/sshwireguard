@@ -118,13 +118,19 @@ if ($_POST['submit'] == "Login") {
 	// Check if user has reached max number of peer ips
 	$retval = write_file($script,"bash $WG_SERVER_SCRIPT_PATH/get_max_ips.bash $username");
 
-	// Check to see if maximum number of Peer IPs has been met
-	if ($retval[1] >= $PEER_IPS) {
 	
-		the_msg("The maximum number of VPN IPs you can have has been met.");
-	
-	}
+	// If peers are allowed unlimited tunnels then don't perform the check of users IPs
+        if ($PEER_IPS != 0) {
 
+		// Check to see if maximum number of Peer IPs has been met
+		if ($retval[1] >= $PEER_IPS) {
+
+			the_msg("The maximum number of VPN IPs you can have has been met.");
+
+		}
+
+	}
+	
 	// Client configuration location
 	$client_config = "$WG_SERVER_SCRIPT_PATH/clients/$username-wg0.conf";
 
