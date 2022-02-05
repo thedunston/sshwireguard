@@ -1,0 +1,4 @@
+gobuild.sh
+*.tmp
+*test*
+notes-gauth

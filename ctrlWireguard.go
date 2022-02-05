@@ -37,7 +37,7 @@ func ctrl_wg(theCtrl string) {
 			fmt.Println(s)
 			if s != "" {
 
-				startWireguard = "wireguard.exe /uninstalltunnelservice sshwireguard.conf"
+				startWireguard = "wireguard.exe /uninstalltunnelservice sshwireguard"
 
 				run_cmd(startWireguard)
 
