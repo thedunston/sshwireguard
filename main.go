@@ -15,6 +15,8 @@ import (
 
 func main() {
 
+	introScreen()
+
 	// Read in the YAML configuration file
 	data, err := os.ReadFile("config.yaml")
 
@@ -25,12 +27,10 @@ func main() {
 	viper.SetConfigType("yaml")
 	viper.ReadConfig(bytes.NewBuffer(_config))
 
-	// Get the triblets:
+	// Get the values from the yaml file:
 	username := viper.Get("username").(string)
-	//authType := viper.Get("authType").(string)
 	hostname := viper.Get("hostname").(string)
 	hostport := viper.Get("hostport").(int)
-	//type2fa := viper.Get("type2fa").(string)
 
 	// Filename to retrieve
 	filename := "sshwireguardConf"
@@ -42,9 +42,9 @@ func main() {
 	g := "sshwireguardConf/config.yaml"
 	fileExists(f, g, "remove")
 
-	fmt.Println("###############################")
+	/**fmt.Println("###############################")
 	fmt.Println("#     SSHWireguard Login      #")
-	fmt.Println("###############################")
+	fmt.Println("###############################")**/
 	c := fmt.Sprintf("scp -r -P %d %s@%s:%s .", hostport, username, hostname, filename)
 	x := strings.Fields(c)
 	cmd := exec.Command(x[0], x[1:]...)
