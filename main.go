@@ -18,7 +18,7 @@ func main() {
 	introScreen()
 
 	// Read in the YAML configuration file
-	data, err := os.ReadFile("config.yaml")
+	data, err := os.ReadFile("sshwireguardConf/config.yaml")
 
 	// Convert YAML strings to bytes
 	var _config = []byte(data)
@@ -37,6 +37,7 @@ func main() {
 
 	// Stop the currently running VPN sessions
 	ctrl_wg("stop")
+	
 	// Remove the existing configurations
 	f := "sshwireguardConf/sshwireguard.conf"
 	g := "sshwireguardConf/config.yaml"

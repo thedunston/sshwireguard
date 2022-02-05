@@ -3,5 +3,10 @@ package main
 /** Global variables */
 
 var (
-	startWireguard string
+
+	// Used in ctrlWireguard.go
+	manageWgClient string
+
+	// Used in ctrlClient.go
+	clientTask string
 )
