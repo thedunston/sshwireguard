@@ -9,7 +9,9 @@
  # authType => 'pass' for password authentication or 'key' for key-based authentication.
  authType: pass
  # Remote SSH server.
- hostname: 169.197.183.39
+ # ex:  10.1.1.1
+ # ex: www.example.com
+ hostname:  X.X.X.X
  # SSH port number
  hostport: 22
  # Currently, only 'totp' is supported.
