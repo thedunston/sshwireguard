@@ -1,15 +1,26 @@
 package main
 
-/** Print messags to the console */
+// Print messages to the console for the user.
+// Includes a prompt so the user can see the message
+// and acknowledge it.
 
 import (
 	//"fmt"
 	//"log"
+	"bufio"
 	"os"
-	"time"
 
 	"github.com/pterm/pterm"
 )
+
+// Prompt when messages are printed to allow the user
+// to see the message and acknowledge it.
+func toContinue() {
+
+	pterm.Info.Println("Press 'Enter' to continue...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+}
 
 // Generic check for errors
 func checkErr(theError error, errString string) {
@@ -18,25 +29,31 @@ func checkErr(theError error, errString string) {
 
 		// Print default error.
 		pterm.Error.Println(errString)
+		toContinue()
 		os.Exit(1)
 	}
 
 }
 
+// Command was not completed successfully
 func errorMsg(theError string) {
 
 	// Print default error.
 	pterm.Error.Println(theError)
+	toContinue()
 
 }
 
+// Command completed successfully
 func successMsg(theSuccess string) {
 
 	// Print default Success
 	pterm.Success.Println(theSuccess)
 
+	toContinue()
 }
 
+// General Informational message
 func infoMsg(theInfo string) {
 
 	// Print default Info message
@@ -44,18 +61,14 @@ func infoMsg(theInfo string) {
 
 }
 
+// Unsucessful command execution returns 1
 func errorOne() {
 
 	os.Exit(1)
 }
 
+// Sucessful command execution returns 0
 func successZero() {
 
 	os.Exit(0)
-}
-
-func msgSleep(theMsg string) {
-
-	successMsg(theMsg + " This window will close automatically.")
-	time.Sleep(5 * time.Second)
 }

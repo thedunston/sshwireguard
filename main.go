@@ -3,76 +3,33 @@ package main
 // SCP to a remote user using 2FA
 
 import (
-
-	"bytes"
-	"fmt"
 	"os"
-	"os/exec"
-	"strings"
-
-	"github.com/spf13/viper"
 )
 
 func main() {
 
+	// Default terminal window header
 	introScreen()
 
-	// Read in the YAML configuration file
-	data, err := os.ReadFile("sshwireguardConf/config.yaml")
+	// Check if the sshwireguardConf folder exists in the user's
+	// home directory.
+	_, err := os.Stat(uHome + "/" + dirname)
+	if os.IsNotExist(err) {
 
-	// Convert YAML strings to bytes
-	var _config = []byte(data)
+		ctrlClient("init")
 
-	// Set config type to YAML
-	viper.SetConfigType("yaml")
-	viper.ReadConfig(bytes.NewBuffer(_config))
+	} else {
 
-	// Get the values from the yaml file:
-	username := viper.Get("username").(string)
-	hostname := viper.Get("hostname").(string)
-	hostport := viper.Get("hostport").(int)
+		// Check that there is an argument provided
+		if len(os.Args) < 2 {
 
-	// Filename to retrieve
-	filename := "sshwireguardConf"
+			errorMsg(cliUsage)
+			errorOne()
+		}
 
-	// Stop the currently running VPN sessions
-	ctrl_wg("stop")
-	
-	// Remove the existing configurations
-	f := "sshwireguardConf/sshwireguard.conf"
-	g := "sshwireguardConf/config.yaml"
-	fileExists(f, g, "remove")
+		// Get first argument from CLI
+		ctrlClient(os.Args[1])
 
-	/**fmt.Println("###############################")
-	fmt.Println("#     SSHWireguard Login      #")
-	fmt.Println("###############################")**/
-	c := fmt.Sprintf("scp -r -P %d %s@%s:%s .", hostport, username, hostname, filename)
-	x := strings.Fields(c)
-	cmd := exec.Command(x[0], x[1:]...)
-
-	// Execute the command and provide an interactive shell
-	// where users type in their password and 2fa code
-	// https://www.reddit.com/r/golang/comments/2nd4pq/how_can_i_open_an_interactive_subprogram_from/
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = os.Stdin
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-
-	// Check if the VPN config file download was successful
-	fileExists(f, g, "getCheck")
-
-	/**
-	  to start: "c:\Program Files\WireGuard\wireguard.exe" /installtunnelservice c:\wg0.conf
-
-	  to stop: "c:\Program Files\WireGuard\wireguard.exe" /uninstalltunnelservice wg0
-
-	  to display other possible command line options: "c:\Program Files\WireGuard\wireguard.exe" -h
-
-	*/
-
-	// Run the appropriate command based on the OS.
-	ctrl_wg("start")
-
-	checkErr(err, "Starting the VPN failed.")
+	}
 
 }

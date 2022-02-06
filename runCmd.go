@@ -11,13 +11,13 @@ import (
 
 func run_cmd(wg_run string) string {
 
-	// Split the command using spaces to restart the service
+	// Split the command using spaces to manage the service
 	args := strings.Fields(wg_run)
 
 	// Run the wireguard command
 	cmd := exec.Command(args[0], args[1:]...)
 
-	// Run allows restarting network systemd scripts
+	// Execute the command
 	err := cmd.Run()
 	checkErr(err, "Error running command "+wg_run)
 
