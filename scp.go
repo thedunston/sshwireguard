@@ -17,7 +17,7 @@ func downloadClientConfig(username string, hostname string, hostport int) {
 	}
 
 	// Start the native scp client and download the configuration files.
-	c := fmt.Sprintf("scp -r -P %d %s@%s:%s .", hostport, username, hostname, dirname)
+	c := fmt.Sprintf("scp -r -P %d %s@%s:%s %s", hostport, username, hostname, dirname, uHome)
 	x := strings.Fields(c)
 	cmd := exec.Command(x[0], x[1:]...)
 
@@ -30,7 +30,7 @@ func downloadClientConfig(username string, hostname string, hostport int) {
 	_ = cmd.Run()
 
 	// Check if the VPN config file download was successful
-	fileExists(uHome+wgConfig, clientConfig, "getCheck")
+	fileExists(uHome+wgConfig, uHome+clientConfig, "getCheck")
 
 	// Run the appropriate command based on the OS.
 	ctrl_wg("start")

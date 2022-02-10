@@ -9,7 +9,7 @@ import (
 func main() {
 
 	// Default terminal window header
-	introScreen()
+	introSSHWireguardScreen()
 
 	// Check if the sshwireguardConf folder exists in the user's
 	// home directory.

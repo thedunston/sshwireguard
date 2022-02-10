@@ -37,7 +37,7 @@ func getClientConfigs() {
 	// Remove the existing configurations
 	wgConf := uHome + wgConfig
 	clientConf := uHome + clientConfig
-	fileExists(wgConf, clientConf, "remove")
+	fileExists(uHome+wgConf, uHome+clientConf, "remove")
 
 	// Download the sshwireguard configuration files
 	downloadClientConfig(username, hostname, hostport)

@@ -3,13 +3,92 @@ package main
 /** Executes the command to manage the Wireguard service or check running status */
 
 import (
-	"bytes"
-	"io"
+	"fmt"
 	"os/exec"
+	"regexp"
+	"runtime"
 	"strings"
+	"time"
 )
 
-func run_cmd(wg_run string) string {
+func checkOutput(o string, taskMsg string) string {
+
+	// Check OS for expected output
+	// Windows
+	if runtime.GOOS == "windows" {
+
+		if taskMsg == "start" {
+
+			taskMsg = "RUNNING"
+
+		} else {
+
+			taskMsg = "STOPPED"
+
+		}
+
+		// *nix
+	} else {
+
+		// Output from the ip command has a colon at the end of the interface
+		taskMsg = "sshwireguard:"
+
+	}
+
+	// Search for the task being performed STOPPED or RUNNING
+	matched, _ := regexp.MatchString(taskMsg, o)
+
+	allGood := ""
+	// Check if the task is in the output.
+	if matched {
+
+		// Ran successfully
+		allGood = "Success"
+
+	} else {
+
+		allGood = "Error"
+
+	}
+
+	return allGood
+
+}
+
+func srvCheck(os string, taskMsg string) string {
+
+	wg_run := ""
+
+	if os == "windows" {
+
+		// Command to check on status of sshwireguard service
+		wg_run = "sc query WireGuardTunnel$sshwireguard"
+
+		// *nix
+	} else {
+
+		// Command to check on status of sshwireguard service
+		wg_run = "ip a show dev sshwireguard"
+
+	}
+
+	// Split the command for execution
+	args := strings.Fields(wg_run)
+
+	// Format the command to run
+	cmd := exec.Command(args[0], args[1:]...)
+
+	// Execute the command
+	results, _ := cmd.CombinedOutput()
+
+	// Get the results
+	cmdResults := checkOutput(string(results), taskMsg)
+
+	return cmdResults
+
+}
+
+func run_cmd(wg_run string, taskMsg string) {
 
 	// Split the command using spaces to manage the service
 	args := strings.Fields(wg_run)
@@ -17,66 +96,20 @@ func run_cmd(wg_run string) string {
 	// Run the wireguard command
 	cmd := exec.Command(args[0], args[1:]...)
 
+	fmt.Println("Please wait...")
+
+	time.Sleep(5 * time.Second)
 	// Execute the command
-	err := cmd.Run()
+	_, err := cmd.CombinedOutput()
 	checkErr(err, "Error running command "+wg_run)
 
-	// Ran successfully
-	allGood := "Success"
-	return allGood
-}
+	//	var cmdResults []byte
+	//checkOutput(string(output), taskMsg)
 
-func run_cmdPipe(wg_run string, thePipe string) string {
+	s := srvCheck("windows", "start")
 
-	// Split the command using spaces
-	args := strings.Fields(wg_run)
-
-	// Split the command using spaces
-	args2 := strings.Fields(thePipe)
-
-	// Execute the commands
-	// args[0] runs the main executable
-	// args[1:]... gets the options and switches
-	cmd1 := exec.Command(args[0], args[1:]...)
-	cmd2 := exec.Command(args2[0], args2[1:]...)
-
-	// Create a pipe.
-	reader, writer := io.Pipe()
-
-	// First command
-	cmd1.Stdout = writer
-
-	// second part of command
-	cmd2.Stdin = reader
-
-	// prepare a buffer to capture the output
-	// after second command finished executing
-	var buff bytes.Buffer
-
-	// Stores the output of the command from Pipe when it finishes.
-	cmd2.Stdout = &buff
-
-	// Run the first command: Cmd
-	cmd1.Start()
-
-	// Run the second command: Pipe
-	cmd2.Start()
-
-	// Waits for the first command to finish running
-	cmd1.Wait()
-
-	// Close the writer
-	writer.Close()
-
-	// Waits for the second command to complete
-	cmd2.Wait()
-
-	// Close the reader
-	reader.Close()
-
-	// Converting the command results to a string
-	output := buff.String()
-
-	return output
+	run_results(s, "started")
+	// DEBUG
+	//fmt.Println("run_cmd: ", wg_run)
 
 }

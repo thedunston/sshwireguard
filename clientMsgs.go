@@ -5,8 +5,6 @@ package main
 // and acknowledge it.
 
 import (
-	//"fmt"
-	//"log"
 	"bufio"
 	"os"
 

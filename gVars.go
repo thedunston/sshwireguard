@@ -1,11 +1,13 @@
 package main
 
+import (
+	"os"
+)
+
 const (
 	dirname      = "sshwireguardConf"
 	wgConfig     = "/sshwireguardConf/sshwireguard.conf"
 	clientConfig = "/sshwireguardConf/config.yaml"
-	//wgConfig_win     = "\\sshwireguardConf\\sshwireguard.conf"
-	//clientConfig_win = "\\sshwireguardConf\\config.yaml"
 )
 
 /** Global variables */
@@ -19,5 +21,15 @@ var (
 	manageWgClient string
 
 	// Used in ctrlClient.go
-	clientTask string
+	//clientTask string
 )
+
+func userHome() string {
+
+	// Checking if current user information is unavailable
+	homedir, err := os.UserHomeDir()
+	checkErr(err, "User's Home Dir environment variable is not set.")
+
+	return homedir
+
+}
