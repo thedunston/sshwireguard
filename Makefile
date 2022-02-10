@@ -1,15 +1,20 @@
 .PHONY: copy-ubuntu
 copy-ubuntu: ## Copy the sshwireguard binary to the test on Ubuntu Linux.
-	@lxc file push test/sshwireguard-linux-amd64-test duane/home/duane/
+	@lxc file push test/sshwireguard-ubuntu-amd64-test ubuntuSSHGW/home/duane/
 
 .PHONY: ubuntu-cont
 ubuntu-cont: ## Drop into an ubuntu container to test the binary.
-	@lxc exec duane -- su --login duane
+	@lxc exec ubuntuSSHWG -- su --login duane
+
+# Linux binaries 64-bit
+LINUX := env GOOS=linux GOARCH=amd64 go build -o test/sshwireguard
 
 .PHONY: test
 test: ## Build and create test binaries.
 	env GOOS=windows GOARCH=amd64 go build -o test/sshwireguard-amd64-test.exe
-	env GOOS=linux GOARCH=amd64 go build -o test/sshwireguard-linux-amd64-test
+	$(LINUX)-ubuntu-amd64-test
+	$(LINUX)-arch-amd64-test
+	
 
 .PHONY: compile
 compile: ## Create the final binaries for the given version.

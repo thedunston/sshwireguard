@@ -21,36 +21,46 @@ func main() {
 	} else {
 
 		// Check that there is an argument provided
-		if len(os.Args) > 2 {
+		if len(os.Args) > 2 || len(os.Args) == 1 {
 
-			errorMsg(cliUsage)
-			errorOne()
-		}
+			infoMsg(cliUsage)
 
-		task := os.Args[1]
+		} else if len(os.Args) == 1 {
 
-		switch task {
+			infoMsg(cliUsage)
 
-		case "init":
+		} else {
 
-			createConf()
+			task := os.Args[1]
 
-		case "stop":
+			switch task {
 
-			ctrl_wg("stop")
+			case "init":
 
-		case "start":
+				createConf()
 
-			ctrl_wg("start")
+			case "stop":
 
-		case "reauth":
+				ctrl_wg("stop")
 
-			getClientConfigs()
+			case "start":
 
-		default:
+				ctrl_wg("start")
 
-			errorMsg(cliUsage)
-			os.Exit(1)
+			case "renew":
+
+				getClientConfigs()
+
+			case "status":
+
+				ctrl_wg("status")
+
+			default:
+
+				infoMsg(cliUsage)
+				os.Exit(1)
+
+			}
 
 		}
 	}
