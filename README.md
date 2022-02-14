@@ -112,10 +112,10 @@ TODO: Create a GUI for the client.
 
 8.  Managing the Wireguard Tunnel:
 
-sshwireguard init - Initializes a new VPN configuration
-sshwireguard stop - Stops the VPN tunnel
-sshwireguard start - Returns whether the sshwireguard Tunnel is running or not running
-sshwireguard renew - Downloads a new VPN configuration (reads config.yaml file located in the sshwireguardConf directory)
+sshwireguard init - Initializes a new VPN configuration  
+sshwireguard stop - Stops the VPN tunnel  
+sshwireguard start - Returns whether the sshwireguard Tunnel is running or not running  
+sshwireguard renew - Downloads a new VPN configuration (reads config.yaml file located in the sshwireguardConf directory)  
 
 ### Compiling clients
 
