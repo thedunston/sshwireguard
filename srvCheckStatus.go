@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+// Function checks the status to determine if the sshwireguard Tunnel is running
+// or not running.
 func check_status(os string, taskMsg string) string {
 
 	wg_run := ""

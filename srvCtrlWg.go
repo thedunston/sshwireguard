@@ -7,7 +7,7 @@ import (
 	"runtime"
 )
 
-// Function is used to start the sshwireguard service.
+// Function is used to manage the sshwireguard service.
 // The arguments can have one or two parameters.
 // If no pipe is needed to check for the service running set the arg_2 parameter to "None"
 //
@@ -31,6 +31,7 @@ func ctrl_wg(runit string) {
 
 	case "windows":
 
+		// Invoke Powershell to start and stop the sshwireguard Tunnel and elevate to admin.
 		if runit == "start" {
 
 			run_cmd(os, "powershell -command start-process 'C:\\Windows\\System32\\sc.exe' -ArgumentList 'start WireGuardTunnel$sshwireguard' -Verb RunAs", "started")
@@ -58,6 +59,7 @@ func ctrl_wg(runit string) {
 
 		if runit == "start" {
 
+			// Sudo is used to start and stop the service
 			run_cmd(os, "sudo wg-quick up "+uHome+wgConfig, "started")
 
 		} else if runit == "stop" {

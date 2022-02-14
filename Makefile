@@ -20,13 +20,15 @@ test: ## Build and create test binaries.
 compile: ## Create the final binaries for the given version.
 	echo "Compiling for every OS and Platform"
 	env GOOS=windows GOARCH=amd64 go build -o bin/sshwireguard-amd64.exe
-	env GOOS=linux GOARCH=amd64 go build -o bin/sshwireguard-linux-amd64
+	env GOOS=linux GOARCH=amd64 go build -o bin/sshwireguard-linux-amd64.bin
 
 .PHONY: clean
 clean: ## Remove test binaries.
 	go clean
 	rm -f test/sshwireguard-amd64-test.exe
 	rm -f test/sshwireguard-linux-amd64-test
+	rm -f bin/sshwireguard-amd64.exe
+	rm -f bin/sshwireguard-linux-amd64.bin
 
 # https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 .PHONY: help

@@ -31,6 +31,7 @@ sshwireguard renew - Downloads a new VPN configuration
 	//clientTask string
 )
 
+// Get user's home directory
 func userHome() string {
 
 	// Checking if current user information is unavailable

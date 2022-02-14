@@ -1,12 +1,10 @@
 package main
 
-import "fmt"
-
 // Function displays whether the service task was pwerformed
 // successfully or unsuccessfully
 func run_results(taskRunMsg string, theTask string) {
 
-	fmt.Println(taskRunMsg + " " + theTask)
+	// Debug: fmt.Println(taskRunMsg + " " + theTask)
 	// Print message based on the status of running the command
 	switch taskRunMsg {
 	case "Success":

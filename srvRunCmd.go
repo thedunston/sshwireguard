@@ -27,6 +27,8 @@ func run_cmd(os string, wg_run string, taskMsg string) {
 
 	// Pause to give service time to start/stop
 	infoMsg("Please wait...")
+
+	// Sleep for 5 seconds
 	time.Sleep(5 * time.Second)
 
 	// Check if service is stopped or stopped
