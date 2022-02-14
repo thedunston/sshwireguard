@@ -92,7 +92,7 @@ TODO: Allow adding a custom expiration for existing users.
 
 ## *Client setup*
 
-1. Download the Wireguard client for the respective OS.
+1. Download the [Wireguard client](https://www.wireguard.com/install/) for the respective OS.
 2. Most Unix distributions have the scp client already installed.  Windows hosts can install the OpenSSH tools via the Microsoft Programs and Features control panel.
 
 3. Download the sshwireguard binary for the respective OS.
