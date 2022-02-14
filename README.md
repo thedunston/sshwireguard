@@ -99,7 +99,7 @@ TODO: Allow adding a custom expiration for existing users.
 
 4. On Linux/Unix based systems make the file executable:
 
-    chmod +x sshwireguard-xxx-xxxx.bin
+        chmod +x sshwireguard-xxx-xxxx.bin
 
 5. On Windows, download the sshwireguard executable ending with .exe.
 
@@ -116,3 +116,13 @@ sshwireguard init - Initializes a new VPN configuration
 sshwireguard stop - Stops the VPN tunnel
 sshwireguard start - Returns whether the sshwireguard Tunnel is running or not running
 sshwireguard renew - Downloads a new VPN configuration (reads config.yaml file located in the sshwireguardConf directory)
+
+### Compiling clients
+
+The clients can be compiled from source.  First install go 1.16+.
+
+run:
+
+    make help
+
+for options.
