@@ -2,6 +2,8 @@
 
 **Status:** Actively used by author and actively supported.
 
+License: sshwirdguard © 2022 by Duane Dunston is licensed under Attribution-ShareAlike 4.0 International. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/
+
 sshwireguard is a program that distributes Wireguard VPN configuration files over SSH to clients and automatically starts their Wireguard VPN client.  It has replaced the nowire application.
 
 **Ready for use.**
